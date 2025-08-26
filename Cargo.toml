@@ -1,0 +1,21 @@
+[package]
+name = "hyperlight-wasm-http-example"
+edition = "2024"
+
+[dependencies]
+hyperlight-component-macro = "0.8.0"
+hyperlight-common = "0.8.0"
+hyperlight-host = { version = "0.8.0", default-features = false, features = [ "kvm", "mshv2" ] }
+hyperlight-wasm = "0.8.0"
+
+hyper = "1.7"
+reqwest = { version = "0.12", features = ["stream", "gzip", "brotli", "deflate", "rustls-tls", "blocking"] }
+bytes = "1"
+tokio = { version = "1.47", features = ["full"] }
+anyhow = "1.0"
+http-body-util = "0.1"
+hyper-util = { version = "0.1", features = ["full"] }
+getrandom = "0.3.3"
+
+[features]
+use-macro = []
