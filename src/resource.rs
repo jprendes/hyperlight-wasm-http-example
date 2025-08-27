@@ -48,6 +48,7 @@ impl<T> Resource<T> {
         WriteGuard {
             guard: self.inner.clone().write_owned().await,
             resource: self.clone(),
+            do_notify: true,
         }
     }
 
@@ -56,7 +57,7 @@ impl<T> Resource<T> {
         let mut fut = pin!(fut);
         fut.as_mut().enable();
 
-        drop(guard);
+        G::unlock(guard);
 
         fut.await;
         G::lock(self.clone()).await
@@ -90,6 +91,12 @@ pub struct ReadGuard<T> {
     guard: tokio::sync::OwnedRwLockReadGuard<T>,
 }
 
+impl<T> ReadGuard<T> {
+    fn drop_no_notify(self) {
+        drop(self);
+    }
+}
+
 impl<T> Deref for ReadGuard<T> {
     type Target = T;
     fn deref(&self) -> &Self::Target {
@@ -100,6 +107,14 @@ impl<T> Deref for ReadGuard<T> {
 pub struct WriteGuard<T> {
     guard: tokio::sync::OwnedRwLockWriteGuard<T>,
     resource: Resource<T>,
+    do_notify: bool,
+}
+
+impl<T> WriteGuard<T> {
+    fn drop_no_notify(mut self) {
+        self.do_notify = false;
+        drop(self);
+    }
 }
 
 impl<T> Deref for WriteGuard<T> {
@@ -115,13 +130,16 @@ impl<T> DerefMut for WriteGuard<T> {
 }
 impl<T> Drop for WriteGuard<T> {
     fn drop(&mut self) {
-        self.resource.notify();
+        if self.do_notify {
+            self.resource.notify();
+        }
     }
 }
 
-pub trait Guard: Sized {
+trait Guard: Sized {
     type Target;
     async fn lock(res: Resource<Self::Target>) -> Self;
+    fn unlock(self);
 }
 
 impl<T> Guard for ReadGuard<T> {
@@ -129,12 +147,18 @@ impl<T> Guard for ReadGuard<T> {
     async fn lock(res: Resource<Self::Target>) -> Self {
         res.read().await
     }
+    fn unlock(self) {
+        self.drop_no_notify();
+    }
 }
 
 impl<T> Guard for WriteGuard<T> {
     type Target = T;
     async fn lock(res: Resource<Self::Target>) -> Self {
         res.write().await
+    }
+    fn unlock(self) {
+        self.drop_no_notify();
     }
 }
 

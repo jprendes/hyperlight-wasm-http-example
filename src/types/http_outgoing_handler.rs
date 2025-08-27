@@ -43,29 +43,29 @@ impl
         for (k, v) in headers {
             builder = builder.header(k, v);
         }
-        let body = request.body.clone();
-        let mut body = body.write_wait_until(|b| b.is_finished()).block_on();
-
-        // TODO: actually use the trailers
-        let _trailers = body.trailers.clone();
-
-        // TODO: use a streaming body instead of reading it all at once
-        let body = body.read_all().block_on();
-
-        let builder = builder.body(body);
 
         let future_response = Resource::new(FutureIncomingResponse::default());
         let future_response_clone = future_response.clone();
-
         async move {
-            let response = builder.send().block_on();
+            let body = request.body.clone();
+            let mut body = body.write_wait_until(|b| b.is_finished()).await;
+
+            // TODO: actually use the trailers
+            let _trailers = body.trailers.clone();
+
+            // TODO: use a streaming body instead of reading it all at once
+            let body = body.read_all().await;
+
+            let builder = builder.body(body);
+
+            let response = builder.send().await;
 
             let response = match response {
                 Ok(resp) => resp,
                 Err(err) => {
                     future_response_clone
                         .write()
-                        .block_on()
+                        .await
                         .set(Err(ErrorCode::InternalError(Some(err.to_string()))));
                     return;
                 }
@@ -80,7 +80,7 @@ impl
                 Err(err) => {
                     future_response_clone
                         .write()
-                        .block_on()
+                        .await
                         .set(Err(ErrorCode::InternalError(Some(err.to_string()))));
                     return;
                 }
@@ -88,6 +88,7 @@ impl
 
             let mut stream = Stream::new();
             let _ = stream.write(bytes);
+            let _ = stream.close();
             let body = IncomingBody {
                 stream: Resource::new(stream),
                 trailers: Resource::default(),
@@ -103,7 +104,7 @@ impl
 
             future_response_clone
                 .write()
-                .block_on()
+                .await
                 .set(Ok(Resource::new(response)));
         }
         .spawn();
