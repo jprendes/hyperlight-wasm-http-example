@@ -1,13 +1,9 @@
 # `hyperlight-wasm` http example
 
-> [!WARNING]  
-> This proof of concept is a work in progress.
-> The current state of this example fails at runtime.
-
 This is a minimal example of a
-[Hyperlight-Wasm](https://github.com/hyperlight-dev/hyperlight-wasm)
+[hyperlight-wasm](https://github.com/hyperlight-dev/hyperlight-wasm)
 host application. It implements just enough of the `wasi:http` api
-to run the [echo sample_wasi_http_rust
+to run the [sample_wasi_http_rust
 server](https://github.com/bytecodealliance/sample-wasi-http-rust).
 
 ## Prerequisites
@@ -17,12 +13,13 @@ server](https://github.com/bytecodealliance/sample-wasi-http-rust).
 3. [`just`](https://github.com/casey/just) (optional, but recommended)
 
 If you want to follow the manual build instructions, you will also need:
+
 4. [`wasm-tools`](https://github.com/bytecodealliance/wasm-tools)
 5. If you are fetching the sample binary from an OCI registry,
    [`wkg`](https://crates.io/crates/wkg/0.10.0).
 6. [`hyperlight-wasm-aot`](https://github.com/hyperlight-dev/hyperlight-wasm) from [this commit](https://github.com/jprendes/hyperlight-wasm/tree/134d8fc35)
 
-## Simply setup
+## Simple setup
 
 ### Building
 
@@ -64,8 +61,10 @@ cargo build
 
 Get an `sample_wasi_http_rust.wasm` from [the sample
 repo](https://github.com/bytecodealliance/sample-wasi-http-rust), either
-by building it or by fetching it from the OCI registry
-(`wkg oci pull ghcr.io/bytecodealliance/sample-wasi-http-rust/sample-wasi-http-rust:latest -o sample_wasi_http_rust.wasm`).
+by building it or by fetching it from the OCI registry:
+```sh
+wkg oci pull ghcr.io/bytecodealliance/sample-wasi-http-rust/sample-wasi-http-rust:latest -o sample_wasi_http_rust.wasm
+```
 
 AOT compile it:
 
