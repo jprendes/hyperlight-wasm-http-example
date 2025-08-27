@@ -23,7 +23,7 @@ impl<F: Future> Future for PollableFuture<F> {
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<bool> {
         let this = unsafe { self.get_unchecked_mut() };
         let Some(fut) = this.fut.as_mut() else {
-            return Poll::Ready(false);
+            return Poll::Ready(true);
         };
         let fut = unsafe { Pin::new_unchecked(fut) };
         match fut.poll(cx) {

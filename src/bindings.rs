@@ -1156,12 +1156,8 @@ impl<
             >>::T,
         >,
     ) -> () {
-        let mut rts = self.rt.lock().unwrap();
-        let ret = ::hyperlight_host::sandbox::Callable::call::<
-            ::std::vec::Vec<u8>,
-        >(
-            &mut self.sb,
-            "r#wasi::r#http::handle",
+        let args = {
+            let mut rts = self.rt.lock().unwrap();
             (
                 {
                     let i = rts.resource24.len();
@@ -1181,8 +1177,11 @@ impl<
                         );
                     alloc::vec::Vec::from(u32::to_ne_bytes(i as u32))
                 },
-            ),
-        );
+            )
+        };
+        let ret = ::hyperlight_host::sandbox::Callable::call::<
+            ::std::vec::Vec<u8>,
+        >(&mut self.sb, "r#wasi::r#http::handle", args);
         let ::std::result::Result::Ok(ret) = ret else {
             panic!("bad return from guest {:?}", ret)
         };

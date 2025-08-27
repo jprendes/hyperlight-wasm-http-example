@@ -23,8 +23,8 @@ impl OutgoingBody {
         self.finished
     }
 
-    pub fn read_all(&mut self) -> Vec<u8> {
-        self.body.write().block_on().read_all().unwrap_or_default()
+    pub async fn read_all(&mut self) -> Vec<u8> {
+        self.body.write().await.read_all().unwrap_or_default()
     }
 }
 

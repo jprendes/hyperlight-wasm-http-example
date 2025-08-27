@@ -50,7 +50,7 @@ impl
         let _trailers = body.trailers.clone();
 
         // TODO: use a streaming body instead of reading it all at once
-        let body = body.read_all();
+        let body = body.read_all().block_on();
 
         let builder = builder.body(body);
 

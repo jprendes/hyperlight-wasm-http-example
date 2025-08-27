@@ -26,7 +26,7 @@ use hyper::{server::conn::http1, service::service_fn};
 use hyper_util::rt::TokioIo;
 use hyperlight_host::sandbox::SandboxConfiguration;
 use hyperlight_wasm::LoadedWasmSandbox;
-use resource::{BlockOn, Resource};
+use resource::Resource;
 use tokio::{net::TcpListener, sync::Mutex};
 use types::{WasiImpl, http_incoming_body::IncomingBody, io_stream::Stream};
 use worker::RUNTIME;
@@ -113,10 +113,10 @@ async fn hello(
     }
 
     let mut body_stream = Stream::new();
-    let _ = body_stream.write(full_body);
+    let _ = body_stream.write(&full_body);
     body_stream.close();
 
-    let req = Resource::new(types::http_incoming_request::IncomingRequest {
+    let req = types::http_incoming_request::IncomingRequest {
         method: req.method().into(),
         path_with_query: Some(
             req.uri()
@@ -129,7 +129,13 @@ async fn hello(
         } else {
             bindings::wasi::http::types::Scheme::HTTP
         }),
-        authority: req.uri().authority().map(|a| a.as_str().to_string()),
+        authority: req
+            .uri()
+            .authority()
+            .map(|a| a.as_str())
+            .or_else(|| req.headers().get("host").and_then(|h| h.to_str().ok()))
+            .or_else(|| Some("dummy"))
+            .map(|s| s.to_string()),
         headers: Resource::new(req.headers().clone().into()),
         body: Resource::new(IncomingBody {
             stream: Resource::new(body_stream),
@@ -137,13 +143,16 @@ async fn hello(
             stream_taken: false,
         }),
         body_taken: false,
-    });
+    };
+    let req = Resource::new(req);
 
     let outparam = Resource::default();
 
-    inst.handle(req, outparam.clone());
+    tokio::task::block_in_place(|| {
+        inst.handle(req, outparam.clone());
+    });
 
-    let Some(response) = outparam.write().block_on().response.take() else {
+    let Some(response) = outparam.write().await.response.take() else {
         let body = Full::new(Bytes::from("Error reading body"));
         let mut res = hyper::Response::new(body);
         *res.status_mut() = hyper::StatusCode::INTERNAL_SERVER_ERROR;
@@ -156,7 +165,7 @@ async fn hello(
             let status = response.status_code;
             let headers = response.headers.read().await.entries();
             let mut body = response.body.write_wait_until(|b| b.is_finished()).await;
-            let body = body.read_all();
+            let body = body.read_all().await;
             let body_bytes = Bytes::from(body);
 
             let mut http_response = hyper::Response::new(Full::new(body_bytes));

@@ -1,0 +1,2 @@
+[env]
+WIT_WORLD = { value = "hyperlight-world.wasm", relative = true }
