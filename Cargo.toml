@@ -3,10 +3,10 @@ name = "hyperlight-wasm-http-example"
 edition = "2024"
 
 [dependencies]
-hyperlight-component-macro = { git="https://github.com/jprendes/hyperlight.git", rev="081053cbf8821997445f2f40c79818e14e6f3062" }
-hyperlight-common = { git="https://github.com/jprendes/hyperlight.git", rev="081053cbf8821997445f2f40c79818e14e6f3062" }
-hyperlight-host = { git="https://github.com/jprendes/hyperlight.git", rev="081053cbf8821997445f2f40c79818e14e6f3062", default-features = false, features = [ "kvm", "mshv2" ] }
-hyperlight-wasm = { git="https://github.com/jprendes/hyperlight-wasm.git", rev="2ac973b881939edbd7c0167d6b09055a52548680" }
+hyperlight-component-macro = { git="https://github.com/jprendes/hyperlight.git", rev="3d459364116e2e3c5b7c37598625fdf0fb540217" }
+hyperlight-common = { git="https://github.com/jprendes/hyperlight.git", rev="3d459364116e2e3c5b7c37598625fdf0fb540217" }
+hyperlight-host = { git="https://github.com/jprendes/hyperlight.git", rev="3d459364116e2e3c5b7c37598625fdf0fb540217", default-features = false, features = [ "kvm", "mshv2" ] }
+hyperlight-wasm = { git="https://github.com/jprendes/hyperlight-wasm.git", rev="134d8fc355ef842ace918777a758349342241c9d" }
 
 hyper = "1.7"
 reqwest = { version = "0.12", features = ["stream", "gzip", "brotli", "deflate", "rustls-tls", "blocking"] }
@@ -16,6 +16,3 @@ anyhow = "1.0"
 http-body-util = "0.1"
 hyper-util = { version = "0.1", features = ["full"] }
 getrandom = "0.3.3"
-
-[features]
-use-macro = []

@@ -1,17 +1,8 @@
 extern crate alloc;
 
-#[cfg(feature = "use-macro")]
 mod bindings {
     hyperlight_component_macro::host_bindgen!();
 }
-
-// the bindings mod is like the above definition, but with an extra line that the
-// macro is currently missing:
-//   let mut rts = self.rt.lock().unwrap();
-// without that line, the generated code doesn't compile
-// See bindings.patch for the diff
-#[cfg(not(feature = "use-macro"))]
-mod bindings;
 
 mod resource;
 mod types;
@@ -34,6 +25,14 @@ use worker::RUNTIME;
 use crate::bindings::wasi::http::IncomingHandler;
 
 fn main() {
+    let args = std::env::args().collect::<Vec<_>>();
+    if args.len() != 2 {
+        eprintln!("Usage: {} <AOT_WASM_FILE>", args[0]);
+        std::process::exit(1);
+    }
+
+    let wasm_path = &args[1];
+
     let builder = hyperlight_wasm::SandboxBuilder::new()
         .with_guest_heap_size(30 * 1024 * 1024)
         .with_guest_stack_size(1 * 1024 * 1024);
@@ -51,7 +50,7 @@ fn main() {
     let rt = bindings::register_host_functions(&mut sb, state);
 
     let sb = sb.load_runtime().unwrap();
-    let sb = sb.load_module("sample_wasi_http_rust.bin").unwrap();
+    let sb = sb.load_module(wasm_path).unwrap();
 
     let sb = bindings::RootSandbox { sb, rt };
     let sb = Arc::new(Mutex::new(sb));
