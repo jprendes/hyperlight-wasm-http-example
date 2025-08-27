@@ -15,8 +15,7 @@ server](https://github.com/bytecodealliance/sample-wasi-http-rust).
 If you want to follow the manual build instructions, you will also need:
 
 4. [`wasm-tools`](https://github.com/bytecodealliance/wasm-tools)
-5. If you are fetching the sample binary from an OCI registry,
-   [`wkg`](https://crates.io/crates/wkg/0.10.0).
+5. [`cargo-component`](https://github.com/bytecodealliance/cargo-component)
 6. [`hyperlight-wasm-aot`](https://github.com/hyperlight-dev/hyperlight-wasm) from [this commit](https://github.com/jprendes/hyperlight-wasm/tree/134d8fc35)
 
 ## Simple setup
@@ -39,6 +38,8 @@ From another terminal, you can then test the server:
 curl http://localhost:3000/
 curl -w'\n' -d "hola mundo" http://127.0.0.1:3000/echo
 curl -I -H "x-language: spanish" http://127.0.0.1:3000/echo-headers
+# get the content of .gitignore from github.com/jprendes/hyperlight-wasm-http-example
+curl -w'\n' http://127.0.0.1:3000/proxy
 ```
 
 ## Manual setup
@@ -59,22 +60,26 @@ cargo build
 
 ### Running
 
-Get an `sample_wasi_http_rust.wasm` from [the sample
-repo](https://github.com/bytecodealliance/sample-wasi-http-rust), either
-by building it or by fetching it from the OCI registry:
+Build the guest component:
 ```sh
-wkg oci pull ghcr.io/bytecodealliance/sample-wasi-http-rust/sample-wasi-http-rust:latest -o sample_wasi_http_rust.wasm
+cargo component build --release \
+    --manifest-path guest/Cargo.toml \
+    --target-dir target
 ```
 
 AOT compile it:
 
 ```sh
-cargo install hyperlight-wasm-aot --git https://github.com/jprendes/hyperlight-wasm.git --rev 134d8fc35
-hyperlight-wasm-aot compile --component sample_wasi_http_rust.wasm sample_wasi_http_rust.bin
+cargo install hyperlight-wasm-aot \
+    --git https://github.com/jprendes/hyperlight-wasm.git \
+    --rev 134d8fc35
+hyperlight-wasm-aot compile --component \
+    target/wasm32-wasip1/release/sample_wasi_http_rust.wasm \
+    target/wasm32-wasip1/release/sample_wasi_http_rust.bin
 ```
 
 You can then run the server:
 
 ```sh
-cargo run -- sample_wasi_http_rust.bin
+cargo run -- target/wasm32-wasip1/release/sample_wasi_http_rust.bin
 ```
