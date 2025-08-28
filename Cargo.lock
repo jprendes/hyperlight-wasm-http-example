@@ -909,7 +909,7 @@ dependencies = [
 [[package]]
 name = "hyperlight-common"
 version = "0.8.0"
-source = "git+https://github.com/jprendes/hyperlight.git?rev=3d459364116e2e3c5b7c37598625fdf0fb540217#3d459364116e2e3c5b7c37598625fdf0fb540217"
+source = "git+https://github.com/hyperlight-dev/hyperlight.git?rev=b7e0481ad1086481da3e7795b4733a7683ba80c8#b7e0481ad1086481da3e7795b4733a7683ba80c8"
 dependencies = [
  "anyhow",
  "flatbuffers",
@@ -921,7 +921,7 @@ dependencies = [
 [[package]]
 name = "hyperlight-component-macro"
 version = "0.8.0"
-source = "git+https://github.com/jprendes/hyperlight.git?rev=3d459364116e2e3c5b7c37598625fdf0fb540217#3d459364116e2e3c5b7c37598625fdf0fb540217"
+source = "git+https://github.com/hyperlight-dev/hyperlight.git?rev=b7e0481ad1086481da3e7795b4733a7683ba80c8#b7e0481ad1086481da3e7795b4733a7683ba80c8"
 dependencies = [
  "env_logger",
  "hyperlight-component-util",
@@ -936,7 +936,7 @@ dependencies = [
 [[package]]
 name = "hyperlight-component-util"
 version = "0.8.0"
-source = "git+https://github.com/jprendes/hyperlight.git?rev=3d459364116e2e3c5b7c37598625fdf0fb540217#3d459364116e2e3c5b7c37598625fdf0fb540217"
+source = "git+https://github.com/hyperlight-dev/hyperlight.git?rev=b7e0481ad1086481da3e7795b4733a7683ba80c8#b7e0481ad1086481da3e7795b4733a7683ba80c8"
 dependencies = [
  "itertools",
  "log",
@@ -950,7 +950,7 @@ dependencies = [
 [[package]]
 name = "hyperlight-host"
 version = "0.8.0"
-source = "git+https://github.com/jprendes/hyperlight.git?rev=3d459364116e2e3c5b7c37598625fdf0fb540217#3d459364116e2e3c5b7c37598625fdf0fb540217"
+source = "git+https://github.com/hyperlight-dev/hyperlight.git?rev=b7e0481ad1086481da3e7795b4733a7683ba80c8#b7e0481ad1086481da3e7795b4733a7683ba80c8"
 dependencies = [
  "anyhow",
  "bitflags 2.9.3",
@@ -993,7 +993,7 @@ dependencies = [
 [[package]]
 name = "hyperlight-wasm"
 version = "0.8.0"
-source = "git+https://github.com/jprendes/hyperlight-wasm.git?rev=134d8fc355ef842ace918777a758349342241c9d#134d8fc355ef842ace918777a758349342241c9d"
+source = "git+https://github.com/jprendes/hyperlight-wasm.git?rev=6fde4c5cc5505051a9a76c05c40c5a214b543860#6fde4c5cc5505051a9a76c05c40c5a214b543860"
 dependencies = [
  "anyhow",
  "blake3",
@@ -2756,9 +2756,9 @@ dependencies = [
 
 [[package]]
 name = "wasmparser"
-version = "0.237.0"
+version = "0.238.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d2a40ca0d2bdf4b0bf36c13a737d0b2c58e4c8aaefe1c57f336dd75369ca250"
+checksum = "c0ad4ca2ecb86b79ea410cd970985665de1d05774b7107b214bc5852b1bcbad7"
 dependencies = [
  "bitflags 2.9.3",
  "hashbrown",

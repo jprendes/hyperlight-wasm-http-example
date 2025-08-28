@@ -16,7 +16,7 @@ If you want to follow the manual build instructions, you will also need:
 
 4. [`wasm-tools`](https://github.com/bytecodealliance/wasm-tools)
 5. [`cargo-component`](https://github.com/bytecodealliance/cargo-component)
-6. [`hyperlight-wasm-aot`](https://github.com/hyperlight-dev/hyperlight-wasm) from [this commit](https://github.com/jprendes/hyperlight-wasm/tree/134d8fc35)
+6. [`hyperlight-wasm-aot`](https://github.com/hyperlight-dev/hyperlight-wasm) from [this commit](https://github.com/jprendes/hyperlight-wasm/tree/6fde4c5cc5505051a9a76c05c40c5a214b543860)
 
 ## Simple setup
 
@@ -72,7 +72,7 @@ AOT compile it:
 ```sh
 cargo install hyperlight-wasm-aot \
     --git https://github.com/jprendes/hyperlight-wasm.git \
-    --rev 134d8fc35
+    --rev 6fde4c5cc
 hyperlight-wasm-aot compile --component \
     target/wasm32-wasip1/release/sample_wasi_http_rust.wasm \
     target/wasm32-wasip1/release/sample_wasi_http_rust.bin
