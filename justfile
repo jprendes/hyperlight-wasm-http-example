@@ -18,8 +18,6 @@ build-component: install-cargo-component
 install-hyperlight-wasm-aot:
     test -f {{ BIN_DIR }}/hyperlight-wasm-aot || \
     cargo install hyperlight-wasm-aot \
-        --git https://github.com/jprendes/hyperlight-wasm.git \
-        --rev 134d8fc355ef842ace918777a758349342241c9d \
         --root {{ TARGET_DIR }}
 
 aot-component: build-component install-hyperlight-wasm-aot

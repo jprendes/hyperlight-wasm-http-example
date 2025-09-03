@@ -3,10 +3,10 @@ name = "hyperlight-wasm-http-example"
 edition = "2024"
 
 [dependencies]
-hyperlight-component-macro = { git="https://github.com/hyperlight-dev/hyperlight.git", rev="b7e0481ad1086481da3e7795b4733a7683ba80c8" }
-hyperlight-common = { git="https://github.com/hyperlight-dev/hyperlight.git", rev="b7e0481ad1086481da3e7795b4733a7683ba80c8" }
-hyperlight-host = { git="https://github.com/hyperlight-dev/hyperlight.git", rev="b7e0481ad1086481da3e7795b4733a7683ba80c8", default-features = false, features = [ "kvm", "mshv2" ] }
-hyperlight-wasm = { git="https://github.com/jprendes/hyperlight-wasm.git", rev="6fde4c5cc5505051a9a76c05c40c5a214b543860" }
+hyperlight-component-macro = { version = "0.9.0" }
+hyperlight-common = { version = "0.9.0" }
+hyperlight-host = { version = "0.9.0", default-features = false, features = [ "kvm", "mshv2" ] }
+hyperlight-wasm = { version = "0.9.0" }
 
 hyper = "1.7"
 reqwest = { version = "0.12", features = ["stream", "gzip", "brotli", "deflate", "rustls-tls", "blocking"] }
