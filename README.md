@@ -63,7 +63,7 @@ cargo build
 Build the guest component:
 ```sh
 cargo component build --release \
-    --manifest-path guest/Cargo.toml \
+    --manifest-path guest_rust/Cargo.toml \
     --target-dir target
 ```
 
@@ -73,11 +73,11 @@ AOT compile it:
 cargo install hyperlight-wasm-aot
 hyperlight-wasm-aot compile --component \
     target/wasm32-wasip1/release/sample_wasi_http_rust.wasm \
-    target/wasm32-wasip1/release/sample_wasi_http_rust.bin
+    out/sample_wasi_http_rust.aot
 ```
 
 You can then run the server:
 
 ```sh
-cargo run -- target/wasm32-wasip1/release/sample_wasi_http_rust.bin
+cargo run -- out/sample_wasi_http_rust.aot
 ```

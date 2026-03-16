@@ -1,7 +1,7 @@
 use wstd::http::body::{BodyForthcoming, IncomingBody};
 use wstd::http::server::{Finished, Responder};
 use wstd::http::{IntoBody, Request, Response, StatusCode};
-use wstd::io::{copy, empty, AsyncWrite};
+use wstd::io::{AsyncWrite, copy, empty};
 use wstd::time::{Duration, Instant};
 
 #[wstd::http_server]
@@ -19,7 +19,7 @@ async fn main(req: Request<IncomingBody>, res: Responder) -> Finished {
 
 async fn home(_req: Request<IncomingBody>, res: Responder) -> Finished {
     // To send a single string as the response body, use `res::respond`.
-    res.respond(Response::new("Hello, wasi:http/proxy world!\n".into_body()))
+    res.respond(Response::new("Hello, Rust wasi:http world!\n".into_body()))
         .await
 }
 
