@@ -24,6 +24,7 @@ pub mod io_error;
 pub mod io_poll;
 pub mod io_stream;
 pub mod random;
+pub mod sockets;
 pub mod types;
 
 #[derive(Default)]
@@ -117,6 +118,30 @@ impl RootImports for WasiImpl {
     type Exit = Self;
 
     fn exit(&mut self) -> impl BorrowMut<Self> {
+        self
+    }
+
+    type Network = Self;
+
+    fn network(&mut self) -> impl BorrowMut<Self> {
+        self
+    }
+
+    type Udp = Self;
+
+    fn udp(&mut self) -> impl BorrowMut<Self> {
+        self
+    }
+
+    type InstanceNetwork = Self;
+
+    fn instance_network(&mut self) -> impl BorrowMut<Self> {
+        self
+    }
+
+    type UdpCreateSocket = Self;
+
+    fn udp_create_socket(&mut self) -> impl BorrowMut<Self> {
         self
     }
 }
