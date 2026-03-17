@@ -1,0 +1,18 @@
+import { AutoRouter } from "itty-router";
+
+import { sleep } from "./endpoints/sleep.js";
+import { upload } from "./endpoints/upload.js";
+import { echo, echoHeaders } from "./endpoints/echo.js";
+
+let router = AutoRouter();
+
+router
+  .get("/", () => new Response("Hello, JS   wasi:http world!\n"))
+  .get("/echo-headers", (req) => echoHeaders(req))
+  .get("/sleep/:ms", async ({ ms }) => await sleep(ms))
+  .post("/echo", (req) => echo(req))
+  .post("/upload", async (req) => await upload(req));
+
+addEventListener("fetch", async (event) => {
+  event.respondWith(router.fetch(event.request));
+});
