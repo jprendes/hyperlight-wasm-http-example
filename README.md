@@ -23,13 +23,22 @@ If you want to follow the manual build instructions, you will also need:
 ### Building
 
 ```sh
+# Install JS dependencies
+npm install
+```
+
+```sh
 just build
 ```
 
 ### Running
 
 ```sh
-just run
+# Run Rust
+just run-rust
+
+# Run JS
+just run-js
 ```
 
 From another terminal, you can then test the server:
@@ -53,9 +62,14 @@ Compile the WIT and set the environment variables used when building
 wasm-tools component wit hyperlight.wit -w -o hyperlight-world.wasm
 ```
 
-Build:
+Build Rust:
 ```
 cargo build
+```
+
+Build JS:
+```
+npm run build
 ```
 
 ### Running
@@ -63,7 +77,7 @@ cargo build
 Build the guest component:
 ```sh
 cargo component build --release \
-    --manifest-path guest/Cargo.toml \
+    --manifest-path guest_rust/Cargo.toml \
     --target-dir target
 ```
 
@@ -73,11 +87,17 @@ AOT compile it:
 cargo install hyperlight-wasm-aot
 hyperlight-wasm-aot compile --component \
     target/wasm32-wasip1/release/sample_wasi_http_rust.wasm \
-    target/wasm32-wasip1/release/sample_wasi_http_rust.bin
+    out/sample_wasi_http_rust.aot
 ```
 
 You can then run the server:
 
+Rust:
 ```sh
-cargo run -- target/wasm32-wasip1/release/sample_wasi_http_rust.bin
+cargo run -- out/sample_wasi_http_rust.aot
+```
+
+JS:
+```sh
+cargo run -- out/sample_wasi_http_js.aot
 ```

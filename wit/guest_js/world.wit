@@ -3,17 +3,19 @@ package root:component;
 world root {
   import wasi:io/poll@0.2.3;
   import wasi:clocks/monotonic-clock@0.2.3;
+  import wasi:clocks/wall-clock@0.2.3;
   import wasi:random/random@0.2.3;
   import wasi:io/error@0.2.3;
   import wasi:io/streams@0.2.3;
-  import wasi:cli/stdout@0.2.3;
   import wasi:cli/stderr@0.2.3;
-  import wasi:cli/stdin@0.2.3;
+  import wasi:cli/environment@0.2.3;
+  import wasi:cli/exit@0.2.3;
   import wasi:http/types@0.2.3;
   import wasi:http/outgoing-handler@0.2.3;
 
   export wasi:http/incoming-handler@0.2.3;
 }
+
 package wasi:io@0.2.3 {
   interface poll {
     resource pollable {
@@ -40,11 +42,6 @@ package wasi:io@0.2.3 {
       subscribe: func() -> pollable;
     }
 
-    variant stream-error {
-      last-operation-failed(error),
-      closed,
-    }
-
     resource output-stream {
       check-write: func() -> result<u64, stream-error>;
       write: func(contents: list<u8>) -> result<_, stream-error>;
@@ -56,6 +53,11 @@ package wasi:io@0.2.3 {
       blocking-write-zeroes-and-flush: func(len: u64) -> result<_, stream-error>;
       splice: func(src: borrow<input-stream>, len: u64) -> result<u64, stream-error>;
       blocking-splice: func(src: borrow<input-stream>, len: u64) -> result<u64, stream-error>;
+    }
+
+    variant stream-error {
+      last-operation-failed(error),
+      closed,
     }
   }
 }
@@ -77,17 +79,34 @@ package wasi:clocks@0.2.3 {
 
     subscribe-duration: func(when: duration) -> pollable;
   }
+  interface wall-clock {
+    record datetime {
+      seconds: u64,
+      nanoseconds: u32,
+    }
+
+    now: func() -> datetime;
+
+    resolution: func() -> datetime;
+  }
 }
 
 
 package wasi:random@0.2.3 {
   interface random {
     get-random-bytes: func(len: u64) -> list<u8>;
+
+    get-random-u64: func() -> u64;
   }
 }
 
 
 package wasi:cli@0.2.3 {
+  interface stderr {
+    use wasi:io/streams@0.2.3.{output-stream};
+
+    get-stderr: func() -> output-stream;
+  }
   interface environment {
     get-environment: func() -> list<tuple<string, string>>;
 
@@ -95,52 +114,18 @@ package wasi:cli@0.2.3 {
 
     initial-cwd: func() -> option<string>;
   }
-  interface stdin {
-    use wasi:io/streams@0.2.3.{input-stream};
-
-    get-stdin: func() -> input-stream;
-  }
-  interface stdout {
-    use wasi:io/streams@0.2.3.{output-stream};
-
-    get-stdout: func() -> output-stream;
-  }
-  interface stderr {
-    use wasi:io/streams@0.2.3.{output-stream};
-
-    get-stderr: func() -> output-stream;
-  }
-  interface terminal-input {
-    resource terminal-input;
-  }
-  interface terminal-output {
-    resource terminal-output;
-  }
-  interface terminal-stdin {
-    use terminal-input.{terminal-input};
-
-    get-terminal-stdin: func() -> option<terminal-input>;
-  }
-  interface terminal-stdout {
-    use terminal-output.{terminal-output};
-
-    get-terminal-stdout: func() -> option<terminal-output>;
-  }
-  interface terminal-stderr {
-    use terminal-output.{terminal-output};
-
-    get-terminal-stderr: func() -> option<terminal-output>;
+  interface exit {
+    exit: func(status: result);
   }
 }
 
 
 package wasi:http@0.2.3 {
   interface types {
-    use wasi:clocks/monotonic-clock@0.2.3.{duration};
-    use wasi:io/streams@0.2.3.{input-stream};
+    use wasi:io/streams@0.2.3.{input-stream, output-stream};
     use wasi:io/poll@0.2.3.{pollable};
-    use wasi:io/streams@0.2.3.{output-stream};
     use wasi:io/error@0.2.3.{error as io-error};
+    use wasi:clocks/monotonic-clock@0.2.3.{duration};
 
     resource fields {
       constructor();
@@ -220,16 +205,6 @@ package wasi:http@0.2.3 {
       finish: static func(this: outgoing-body, trailers: option<trailers>) -> result<_, error-code>;
     }
 
-    resource request-options {
-      constructor();
-      connect-timeout: func() -> option<duration>;
-      set-connect-timeout: func(duration: option<duration>) -> result;
-      first-byte-timeout: func() -> option<duration>;
-      set-first-byte-timeout: func(duration: option<duration>) -> result;
-      between-bytes-timeout: func() -> option<duration>;
-      set-between-bytes-timeout: func(duration: option<duration>) -> result;
-    }
-
     resource response-outparam {
       set: static func(param: response-outparam, response: result<outgoing-response, error-code>);
     }
@@ -307,16 +282,26 @@ package wasi:http@0.2.3 {
 
     type status-code = u16;
 
-    resource future-trailers {
-      subscribe: func() -> pollable;
-      get: func() -> option<result<result<option<trailers>, error-code>>>;
-    }
-
     type trailers = fields;
 
     resource future-incoming-response {
       subscribe: func() -> pollable;
       get: func() -> option<result<result<incoming-response, error-code>>>;
+    }
+
+    resource request-options {
+      constructor();
+      connect-timeout: func() -> option<duration>;
+      set-connect-timeout: func(duration: option<duration>) -> result;
+      first-byte-timeout: func() -> option<duration>;
+      set-first-byte-timeout: func(duration: option<duration>) -> result;
+      between-bytes-timeout: func() -> option<duration>;
+      set-between-bytes-timeout: func(duration: option<duration>) -> result;
+    }
+
+    resource future-trailers {
+      subscribe: func() -> pollable;
+      get: func() -> option<result<result<option<trailers>, error-code>>>;
     }
 
     http-error-code: func(err: borrow<io-error>) -> option<error-code>;

@@ -8,4 +8,7 @@ impl wasi::random::Random for WasiImpl {
         getrandom::fill(&mut buf).unwrap();
         buf
     }
+    fn get_random_u64(&mut self) -> u64 {
+        getrandom::u64().unwrap()
+    }
 }

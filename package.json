@@ -1,0 +1,30 @@
+{
+  "name": "sample-wasi-http-js",
+  "version": "1.0.0",
+  "description": "Default build using upstream componentize-js",
+  "scripts": {
+    "bundle": "rollup -c",
+    "build": "npm run bundle && npx componentize-js --wit wit/guest_js -d stdio -o out/$npm_package_name.wasm out/bundle.js",
+    "format-ci": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css}\"",
+    "lint": "eslint src/**/*.js",
+    "test": "vitest --run"
+  },
+  "devDependencies": {
+    "@bytecodealliance/componentize-js": "^0.19.3",
+    "@bytecodealliance/jco": "^1.15.4",
+    "@bytecodealliance/jco-std": "^0.1.3",
+    "@eslint/js": "^9.24.0",
+    "@rollup/plugin-node-resolve": "*",
+    "eslint": "^9.24.0",
+    "globals": "^16.0.0",
+    "just-install": "*",
+    "prettier": "^3.5.3",
+    "rollup": "^4.37.0",
+    "vitest": "^3.1.1",
+    "wait-on": "^8.0.3"
+  },
+  "dependencies": {
+    "@bytecodealliance/preview2-shim": "^0.17.8",
+    "itty-router": "^5.0.18"
+  }
+}
