@@ -144,4 +144,16 @@ impl RootImports for WasiImpl {
     fn udp_create_socket(&mut self) -> impl BorrowMut<Self> {
         self
     }
+
+    type Tcp = Self;
+
+    fn tcp(&mut self) -> impl BorrowMut<Self> {
+        self
+    }
+
+    type TcpCreateSocket = Self;
+
+    fn tcp_create_socket(&mut self) -> impl BorrowMut<Self> {
+        self
+    }
 }
