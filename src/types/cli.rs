@@ -74,3 +74,25 @@ impl wasi::cli::Stderr<Resource<Stream>> for WasiImpl {
         STDERR.clone()
     }
 }
+
+impl wasi::cli::Environment for WasiImpl {
+    fn get_environment(&mut self) -> Vec<(String, String)> {
+        vec![]
+    }
+
+    fn get_arguments(&mut self) -> Vec<String> {
+        vec![]
+    }
+
+    fn initial_cwd(&mut self) -> Option<String> {
+        std::env::current_dir()
+            .ok()
+            .and_then(|p| p.into_os_string().into_string().ok())
+    }
+}
+
+impl wasi::cli::Exit for WasiImpl {
+    fn exit(&mut self, _status: std::result::Result<(), ()>) {
+        //TODO: This doesn't do anything for the time being
+    }
+}

@@ -3,7 +3,7 @@ BIN_DIR := TARGET_DIR + "/bin"
 OUT_DIR := justfile_directory() + "/out"
 default-target := "release"
 
-default: run
+default: run-rust
 
 make-out-dir:
     mkdir -p {{ OUT_DIR }}
@@ -14,6 +14,10 @@ install-hyperlight-wasm-aot:
         --locked \
         --version 0.9.0 \
         --root {{ TARGET_DIR }}
+
+build-js-component: make-out-dir install-hyperlight-wasm-aot
+    npm run build
+    cd {{ OUT_DIR }} && {{ BIN_DIR }}/hyperlight-wasm-aot compile --component sample-wasi-http-js.wasm
 
 build-rust-component target=default-target: make-out-dir install-hyperlight-wasm-aot
     cargo component build \
@@ -34,6 +38,8 @@ make-wit-world: install-wasm-tools
 build: make-wit-world
     cargo build
 
-run: build build-rust-component
+run-rust: build build-rust-component
     cargo run -- {{ OUT_DIR }}/sample_wasi_http_rust.aot
 
+run-js: build build-js-component
+    cargo run -- {{ OUT_DIR }}/sample-wasi-http-js.aot
