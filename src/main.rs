@@ -16,7 +16,6 @@ use bytes::Bytes;
 use http_body_util::{BodyExt, Full};
 use hyper::{server::conn::http1, service::service_fn};
 use hyper_util::rt::TokioIo;
-use hyperlight_host::sandbox::SandboxConfiguration;
 use hyperlight_wasm::LoadedWasmSandbox;
 use tokio::{net::TcpListener, sync::Mutex};
 
@@ -31,14 +30,8 @@ fn main() {
 
     let builder = hyperlight_wasm::SandboxBuilder::new()
         .with_guest_heap_size(30 * 1024 * 1024)
-        .with_guest_stack_size(1 * 1024 * 1024);
-
-    // hyperlight wasm currently doesn't expose a way to set the host
-    // function definition size, so we do it manually here with a
-    // horrible hack to get a mutable reference to the config
-    let config = builder.get_config() as *const _ as *mut SandboxConfiguration;
-    let config = unsafe { config.as_mut().unwrap() };
-    config.set_host_function_definition_size(20 * 1024);
+        .with_guest_stack_size(1 * 1024 * 1024)
+        .with_function_definition_size(20 * 1024);
 
     let mut sb = builder.build().unwrap();
 

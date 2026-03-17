@@ -3,16 +3,16 @@ name = "hyperlight-wasm-http-example"
 edition = "2024"
 
 [dependencies]
-hyperlight-component-macro = { version = "0.9.0" }
-hyperlight-common = { version = "0.9.0" }
-hyperlight-host = { version = "0.9.0", default-features = false, features = [ "kvm", "mshv2" ] }
-hyperlight-wasm = { version = "0.9.0" }
-
-hyper = "1.7"
-reqwest = { version = "0.12", features = ["stream", "gzip", "brotli", "deflate", "rustls-tls", "blocking"] }
-bytes = "1"
-tokio = { version = "1.47", features = ["full"] }
 anyhow = "1.0"
-http-body-util = "0.1"
-hyper-util = { version = "0.1", features = ["full"] }
+bytes = "1"
 getrandom = "0.3.3"
+http-body-util = "0.1"
+hyper = "1.7"
+hyper-util = { version = "0.1", features = ["full"] }
+hyperlight-component-macro = { version = "0.12.0" }
+hyperlight-common = { version = "0.12.0" }
+hyperlight-host = { version = "0.12.0", default-features = false, features = [ "kvm", "mshv3" ] }
+hyperlight-wasm = { version = "0.12.0" }
+once_cell = "1.21.3"
+reqwest = { version = "0.12", features = ["stream", "gzip", "brotli", "deflate", "rustls-tls", "blocking"] }
+tokio = { version = "1.47", features = ["full"] }
