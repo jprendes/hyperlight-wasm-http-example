@@ -4,3 +4,7 @@
 target/
 *.wasm
 *.bin
+node_modules
+out/
+.vscode/settings.json
+.vscode/wasm_runtime

@@ -1,0 +1,15 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "find-wasm-runtime",
+      "type": "shell",
+      "command": "ln -sf $(find ${workspaceFolder}/target/debug/build -path '*/out/target/x86_64-hyperlight-none/debug/wasm_runtime' | head -1) ${workspaceFolder}/.vscode/wasm_runtime",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "close": true
+      }
+    }
+  ]
+}

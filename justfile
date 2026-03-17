@@ -19,6 +19,10 @@ build-js-component: make-out-dir install-hyperlight-wasm-aot
     npm run build
     cd {{ OUT_DIR }} && {{ BIN_DIR }}/hyperlight-wasm-aot compile --component sample-wasi-http-js.wasm
 
+build-js-debug-component: make-out-dir install-hyperlight-wasm-aot
+    npm run build:debug
+    cd {{ OUT_DIR }} && {{ BIN_DIR }}/hyperlight-wasm-aot compile --component sample-wasi-http-js-debug.wasm
+
 build-rust-component target=default-target: make-out-dir install-hyperlight-wasm-aot
     cargo component build \
       --profile={{ if target == "debug" { "dev" } else { target } }} \
@@ -26,6 +30,14 @@ build-rust-component target=default-target: make-out-dir install-hyperlight-wasm
       --target-dir {{ TARGET_DIR }}
     cp {{ TARGET_DIR }}/wasm32-wasip1/{{ target }}/sample_wasi_http_rust.wasm {{ OUT_DIR }}/sample_wasi_http_rust.wasm
     cd {{ OUT_DIR }} && {{ BIN_DIR }}/hyperlight-wasm-aot compile --component sample_wasi_http_rust.wasm
+
+build-rust-debug-component: make-out-dir install-hyperlight-wasm-aot
+    cargo component build \
+      --profile="dev" \
+      --manifest-path guest_rust/Cargo.toml \
+      --target-dir {{ TARGET_DIR }}
+    cp {{ TARGET_DIR }}/wasm32-wasip1/debug/sample_wasi_http_rust.wasm {{ OUT_DIR }}/sample_wasi_http_rust_debug.wasm
+    cd {{ OUT_DIR }} && {{ BIN_DIR }}/hyperlight-wasm-aot compile --debug --component sample_wasi_http_rust_debug.wasm
 
 install-wasm-tools:
     test -f {{ BIN_DIR }}/wasm-tools || \

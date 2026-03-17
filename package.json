@@ -5,6 +5,7 @@
   "scripts": {
     "bundle": "rollup -c",
     "build": "npm run bundle && npx componentize-js --wit wit/guest_js -d stdio -o out/$npm_package_name.wasm out/bundle.js",
+    "build:debug": "npm run bundle && npx componentize-js --wit wit/guest_js_debug -d stdio --use-debug-build --runtime-args \"--enable-script-debugging\" -o out/$npm_package_name-debug.wasm out/bundle.js",
     "format-ci": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css}\"",
     "lint": "eslint src/**/*.js",
     "test": "vitest --run"

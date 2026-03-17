@@ -1,0 +1,83 @@
+{
+  "inputs": [
+    {
+      "id": "program",
+      "type": "promptString",
+      "default": "./target/debug/build/hyperlight-wasm-d4560541bdba9732/out/target/x86_64-hyperlight-none/debug/wasm_runtime",
+      "description": "Path to the program to debug"
+    },
+    {
+      "id": "component",
+      "type": "promptString",
+      "default": "out/udp-guest.aot",
+      "description": "Enter the path to the StarlingMonkey component to debug, relative to the workspace folder."
+    }
+  ],
+  "configurations": [
+    {
+      "type": "starlingmonkey",
+      "request": "launch",
+      "name": "Debug StarlingMonkey component",
+      "program": "${workspaceFolder}/out/bundle.js",
+      "component": "${workspaceFolder}/out/sample-wasi-http-js-debug.aot",
+      "stopOnEntry": true
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug 'hyperlight-wasm-debug'",
+      "cargo": {
+        "args": [
+          "build"
+        ]
+      },
+      "args": [
+        "serve",
+        "${workspaceFolder}/out/rust_http_server_debug.aot"
+      ],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Remote GDB attach",
+      "type": "cppdbg",
+      "request": "launch",
+      "preLaunchTask": "find-wasm-runtime",
+      "program": "${workspaceFolder}/.vscode/wasm_runtime",
+      "args": [],
+      "stopAtEntry": true,
+      "hardwareBreakpoints": {
+        "require": false,
+        "limit": 4
+      },
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/local/bin/gdb",
+      "miDebuggerServerAddress": "localhost:8080",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Set Disassembly Flavor to Intel",
+          "text": "-gdb-set disassembly-flavor intel",
+          "ignoreFailures": true
+        }
+      ]
+    },
+    {
+      "name": "Remote LLDB attach",
+      "type": "lldb",
+      "request": "launch",
+      "targetCreateCommands": [
+        "target create ./target/debug/build/hyperlight-wasm-d4560541bdba9732/out/target/x86_64-hyperlight-none/debug/wasm_runtime"
+      ],
+      "processCreateCommands": [
+        "gdb-remote localhost:8080"
+      ]
+    }
+  ]
+}
