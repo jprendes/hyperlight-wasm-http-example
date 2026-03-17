@@ -101,3 +101,7 @@ JS:
 ```sh
 cargo run -- out/sample_wasi_http_js.aot
 ```
+
+## Try it yourself!
+
+[GitHub codespaces](https://codespaces.new/hyperlight-dev/hyperlight-wasm-http-example)
