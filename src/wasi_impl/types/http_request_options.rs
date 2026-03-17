@@ -4,7 +4,7 @@ use hyperlight_common::resource::BorrowedResourceGuard;
 
 use super::WasiImpl;
 
-use crate::{
+use crate::wasi_impl::{
     bindings::wasi,
     resource::{BlockOn, Resource},
 };

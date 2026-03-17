@@ -1,6 +1,6 @@
 use std::{sync::LazyLock, time::Duration};
 
-use crate::{bindings::wasi, resource::Resource};
+use crate::wasi_impl::{bindings::wasi, resource::Resource};
 
 use super::{WasiImpl, io_poll::AnyPollable};
 

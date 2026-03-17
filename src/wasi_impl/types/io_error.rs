@@ -1,8 +1,8 @@
 use hyperlight_common::resource::BorrowedResourceGuard;
 
-use crate::types::WasiImpl;
+use crate::wasi_impl::types::WasiImpl;
 
-use crate::bindings::wasi;
+use crate::wasi_impl::bindings::wasi;
 
 impl wasi::io::error::Error for WasiImpl {
     type T = anyhow::Error;
