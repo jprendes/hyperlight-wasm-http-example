@@ -4,7 +4,7 @@ use super::{
     WasiImpl,
     headers::{HeaderError, Headers},
 };
-use crate::{
+use crate::wasi_impl::{
     bindings::wasi,
     resource::{BlockOn, Resource},
 };

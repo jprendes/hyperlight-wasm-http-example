@@ -1,4 +1,4 @@
-use crate::{
+use crate::wasi_impl::{
     bindings::wasi,
     resource::{BlockOn as _, Resource},
 };

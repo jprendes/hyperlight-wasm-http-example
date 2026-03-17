@@ -2,7 +2,7 @@ use std::sync::LazyLock;
 
 use tokio::io::{AsyncReadExt as _, AsyncWriteExt as _, stderr, stdin, stdout};
 
-use crate::{bindings::wasi, resource::Resource, worker::RUNTIME};
+use crate::wasi_impl::{bindings::wasi, resource::Resource, worker::RUNTIME};
 
 use super::{WasiImpl, io_stream::Stream};
 

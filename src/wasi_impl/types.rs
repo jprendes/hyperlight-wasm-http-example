@@ -1,6 +1,6 @@
 use std::borrow::BorrowMut;
 
-use crate::bindings::root::component::RootImports;
+use crate::wasi_impl::bindings::root::component::RootImports;
 
 pub mod buffer;
 pub mod cli;
