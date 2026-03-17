@@ -12,7 +12,7 @@ install-hyperlight-wasm-aot:
     test -f {{ BIN_DIR }}/hyperlight-wasm-aot || \
     cargo install hyperlight-wasm-aot \
         --locked \
-        --version 0.9.0 \
+        --version 0.12.0 \
         --root {{ TARGET_DIR }}
 
 build-js-component: make-out-dir install-hyperlight-wasm-aot
