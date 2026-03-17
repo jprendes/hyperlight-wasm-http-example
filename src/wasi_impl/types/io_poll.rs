@@ -6,7 +6,7 @@ use std::{
 
 use hyperlight_common::resource::BorrowedResourceGuard;
 
-use crate::{
+use crate::wasi_impl::{
     bindings::wasi::{self},
     resource::{BlockOn, Resource},
 };

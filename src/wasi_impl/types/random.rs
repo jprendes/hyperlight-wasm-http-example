@@ -1,4 +1,4 @@
-use crate::bindings::wasi;
+use crate::wasi_impl::bindings::wasi;
 
 use super::WasiImpl;
 

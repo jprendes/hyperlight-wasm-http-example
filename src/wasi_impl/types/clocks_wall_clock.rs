@@ -1,5 +1,5 @@
 use super::WasiImpl;
-use crate::bindings::wasi;
+use crate::wasi_impl::bindings::wasi;
 
 impl wasi::clocks::WallClock for WasiImpl {
     fn now(&mut self) -> wasi::clocks::wall_clock::Datetime {

@@ -1,5 +1,5 @@
-use crate::bindings::wasi::{self};
-use crate::resource::{BlockOn, Resource};
+use crate::wasi_impl::bindings::wasi;
+use crate::wasi_impl::resource::{BlockOn, Resource};
 
 use wasi::http::types::ErrorCode;
 
