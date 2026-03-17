@@ -1,6 +1,6 @@
 use hyperlight_common::resource::BorrowedResourceGuard;
 
-use crate::{
+use crate::wasi_impl::{
     bindings::wasi::{self, io::streams::StreamError},
     resource::{BlockOn, Resource},
 };

@@ -1,28 +1,24 @@
 extern crate alloc;
 
-mod bindings {
-    hyperlight_component_macro::host_bindgen!();
-}
+mod wasi_impl;
 
-mod resource;
-mod types;
-mod worker;
+use wasi_impl::{
+    Resource,
+    bindings::{RootSandbox, register_host_functions, wasi, wasi::http::IncomingHandler},
+    types,
+    types::{WasiImpl, http_incoming_body::IncomingBody, io_stream::Stream},
+    worker::RUNTIME,
+};
 
 use std::{convert::Infallible, net::SocketAddr, str::FromStr, sync::Arc};
 
-use bindings::RootSandbox;
 use bytes::Bytes;
 use http_body_util::{BodyExt, Full};
 use hyper::{server::conn::http1, service::service_fn};
 use hyper_util::rt::TokioIo;
 use hyperlight_host::sandbox::SandboxConfiguration;
 use hyperlight_wasm::LoadedWasmSandbox;
-use resource::Resource;
 use tokio::{net::TcpListener, sync::Mutex};
-use types::{WasiImpl, http_incoming_body::IncomingBody, io_stream::Stream};
-use worker::RUNTIME;
-
-use crate::bindings::wasi::http::IncomingHandler;
 
 fn main() {
     let args = std::env::args().collect::<Vec<_>>();
@@ -46,13 +42,13 @@ fn main() {
 
     let mut sb = builder.build().unwrap();
 
-    let state = types::WasiImpl::new();
-    let rt = bindings::register_host_functions(&mut sb, state);
+    let state = WasiImpl::new();
+    let rt = register_host_functions(&mut sb, state);
 
     let sb = sb.load_runtime().unwrap();
     let sb = sb.load_module(wasm_path).unwrap();
 
-    let sb = bindings::RootSandbox { sb, rt };
+    let sb = RootSandbox { sb, rt };
     let sb = Arc::new(Mutex::new(sb));
 
     RUNTIME.block_on(async move {
@@ -92,7 +88,7 @@ async fn hello(
     mut req: hyper::Request<hyper::body::Incoming>,
 ) -> Result<hyper::Response<Full<Bytes>>, Infallible> {
     let mut sb = sb.lock().await;
-    let inst = bindings::root::component::RootExports::incoming_handler(&mut *sb);
+    let inst = wasi_impl::bindings::root::component::RootExports::incoming_handler(&mut *sb);
 
     let body = req.body_mut();
     let mut full_body = Vec::new();
@@ -124,9 +120,9 @@ async fn hello(
                 .unwrap_or_default(),
         ),
         scheme: Some(if req.uri().scheme_str() == Some("https") {
-            bindings::wasi::http::types::Scheme::HTTPS
+            wasi_impl::bindings::wasi::http::types::Scheme::HTTPS
         } else {
-            bindings::wasi::http::types::Scheme::HTTP
+            wasi_impl::bindings::wasi::http::types::Scheme::HTTP
         }),
         authority: req
             .uri()
@@ -188,19 +184,19 @@ async fn hello(
     }
 }
 
-impl From<&hyper::Method> for bindings::wasi::http::types::Method {
+impl From<&hyper::Method> for wasi::http::types::Method {
     fn from(method: &hyper::Method) -> Self {
         match method.as_str() {
-            "GET" => bindings::wasi::http::types::Method::Get,
-            "POST" => bindings::wasi::http::types::Method::Post,
-            "PUT" => bindings::wasi::http::types::Method::Put,
-            "DELETE" => bindings::wasi::http::types::Method::Delete,
-            "HEAD" => bindings::wasi::http::types::Method::Head,
-            "OPTIONS" => bindings::wasi::http::types::Method::Options,
-            "CONNECT" => bindings::wasi::http::types::Method::Connect,
-            "TRACE" => bindings::wasi::http::types::Method::Trace,
-            "PATCH" => bindings::wasi::http::types::Method::Patch,
-            other => bindings::wasi::http::types::Method::Other(other.to_string()),
+            "GET" => wasi_impl::bindings::wasi::http::types::Method::Get,
+            "POST" => wasi_impl::bindings::wasi::http::types::Method::Post,
+            "PUT" => wasi_impl::bindings::wasi::http::types::Method::Put,
+            "DELETE" => wasi_impl::bindings::wasi::http::types::Method::Delete,
+            "HEAD" => wasi_impl::bindings::wasi::http::types::Method::Head,
+            "OPTIONS" => wasi_impl::bindings::wasi::http::types::Method::Options,
+            "CONNECT" => wasi_impl::bindings::wasi::http::types::Method::Connect,
+            "TRACE" => wasi_impl::bindings::wasi::http::types::Method::Trace,
+            "PATCH" => wasi_impl::bindings::wasi::http::types::Method::Patch,
+            other => wasi_impl::bindings::wasi::http::types::Method::Other(other.to_string()),
         }
     }
 }

@@ -1,6 +1,6 @@
 use hyperlight_common::resource::BorrowedResourceGuard;
 
-use crate::{bindings::wasi, resource::Resource};
+use crate::wasi_impl::{bindings::wasi, resource::Resource};
 
 use super::{WasiImpl, io_poll::AnyPollable, io_stream::Stream};
 

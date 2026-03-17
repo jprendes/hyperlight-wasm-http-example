@@ -4,7 +4,7 @@ use std::{
     sync::Arc,
 };
 
-use crate::{types::io_poll::AnyPollable, worker::RUNTIME};
+use crate::wasi_impl::{types::io_poll::AnyPollable, worker::RUNTIME};
 
 pub struct Resource<T> {
     inner: Arc<tokio::sync::RwLock<T>>,
