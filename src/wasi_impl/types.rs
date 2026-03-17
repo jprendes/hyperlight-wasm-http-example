@@ -29,12 +29,14 @@ pub mod types;
 #[derive(Default)]
 pub struct WasiImpl {
     client: reqwest::Client,
+    pub env_vars: Vec<(String, String)>,
 }
 
 impl WasiImpl {
     pub fn new() -> Self {
         Self {
             client: reqwest::Client::new(),
+            env_vars: Vec::new(),
         }
     }
 }
