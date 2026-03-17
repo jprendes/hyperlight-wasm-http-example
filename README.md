@@ -94,10 +94,10 @@ You can then run the server:
 
 Rust:
 ```sh
-cargo run -- out/sample_wasi_http_rust.aot
+cargo run -- serve --addr 0.0.0.0:9999 {{ OUT_DIR }}/sample_wasi_http_rust.aot
 ```
 
 JS:
 ```sh
-cargo run -- out/sample_wasi_http_js.aot
+cargo run -- serve --addr 0.0.0.0:8888 {{ OUT_DIR }}/sample_wasi_http_js.aot
 ```

@@ -77,7 +77,7 @@ impl wasi::cli::Stderr<Resource<Stream>> for WasiImpl {
 
 impl wasi::cli::Environment for WasiImpl {
     fn get_environment(&mut self) -> Vec<(String, String)> {
-        vec![]
+        self.env_vars.clone()
     }
 
     fn get_arguments(&mut self) -> Vec<String> {

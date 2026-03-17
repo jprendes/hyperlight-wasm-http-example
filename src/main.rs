@@ -1,58 +1,119 @@
 extern crate alloc;
 
+mod sandbox_pool;
 mod wasi_impl;
 
-use wasi_impl::{
-    Resource,
-    bindings::{RootSandbox, register_host_functions, wasi, wasi::http::IncomingHandler},
-    types,
-    types::{WasiImpl, http_incoming_body::IncomingBody, io_stream::Stream},
-    worker::RUNTIME,
-};
+use wasi_impl::Resource;
+use wasi_impl::bindings::wasi::cli::Run;
+use wasi_impl::bindings::wasi::http::IncomingHandler;
+use wasi_impl::types::{WasiImpl, http_incoming_body::IncomingBody, io_stream::Stream};
+use wasi_impl::worker::RUNTIME;
 
 use std::{convert::Infallible, net::SocketAddr, str::FromStr, sync::Arc};
 
 use bytes::Bytes;
+use clap::{Args, Parser, Subcommand};
 use http_body_util::{BodyExt, Full};
 use hyper::{server::conn::http1, service::service_fn};
 use hyper_util::rt::TokioIo;
-use hyperlight_host::sandbox::SandboxConfiguration;
-use hyperlight_wasm::LoadedWasmSandbox;
+use once_cell::sync::Lazy;
+use sandbox_pool::SandboxPool;
 use tokio::{net::TcpListener, sync::Mutex};
 
+// Pool of sandboxes that are used at runtime to handle incoming HTTP requests.
+static SANDBOX_POOL: Lazy<Arc<Mutex<SandboxPool>>> =
+    Lazy::new(|| Arc::new(Mutex::new(SandboxPool::default())));
+
+/// Common options shared between subcommands (modeled after wasmtime).
+#[derive(Args, Debug, Clone)]
+struct CliOptions {
+    /// Not used, it needs `wasi:filesystem` implementation which is not
+    /// possible at the moment because `wasi:filesystem/types` conflicts with
+    /// `wasi:http/types`.
+    /// This is here for compatibility with `wasmtime` cli
+    #[arg(long = "dir", value_name = "HOST_DIR::GUEST_DIR")]
+    dirs: Vec<String>,
+
+    /// Pass an environment variable to the guest.
+    /// Format: `KEY=VALUE`
+    #[arg(long = "env", value_name = "KEY=VALUE")]
+    envs: Vec<String>,
+
+    /// Path to the AOT-compiled WASM component file
+    wasm_file: String,
+}
+
+#[derive(Subcommand, Debug)]
+enum Command {
+    /// Run a WASM component (guest exports wasi:cli/run)
+    Run {
+        #[command(flatten)]
+        options: CliOptions,
+    },
+    /// Serve an HTTP component (guest exports wasi:http/incoming-handler)
+    Serve {
+        #[command(flatten)]
+        options: CliOptions,
+
+        /// Socket address to listen on
+        #[arg(long, default_value = "0.0.0.0:8080", value_name = "ADDR")]
+        addr: String,
+    },
+}
+
+#[derive(Parser, Debug)]
+#[command(name = "hyperlight-wasm-debug")]
+#[command(about = "Run a WASM component with Hyperlight")]
+struct Cli {
+    #[command(subcommand)]
+    command: Command,
+}
+
 fn main() {
-    let args = std::env::args().collect::<Vec<_>>();
-    if args.len() != 2 {
-        eprintln!("Usage: {} <AOT_WASM_FILE>", args[0]);
-        std::process::exit(1);
+    let cli = Cli::parse();
+
+    match cli.command {
+        Command::Run { options } => {
+            run_cli(options);
+        }
+        Command::Serve { options, addr } => {
+            run_http(options, &addr);
+        }
     }
+}
 
-    let wasm_path = &args[1];
+/// Run the guest component via `wasi:cli/run`.
+///
+/// The guest manages its own I/O (TCP, UDP, stdio, etc.) through the WASI
+/// imports it was compiled against.
+fn run_cli(options: CliOptions) {
+    println!("Running component...");
+    RUNTIME.block_on(async {
+        SANDBOX_POOL.lock().await.from_options(options);
+        let mut sb = SANDBOX_POOL.lock().await.get_sandbox();
+        tokio::task::block_in_place(|| {
+            let inst = wasi_impl::bindings::root::component::RootExports::run(&mut sb);
+            match inst.run() {
+                Ok(()) => println!("Component exited successfully."),
+                Err(()) => eprintln!("Component exited with an error."),
+            }
+        });
+        SANDBOX_POOL.lock().await.return_sandbox(sb);
+    });
+}
 
-    let builder = hyperlight_wasm::SandboxBuilder::new()
-        .with_guest_heap_size(30 * 1024 * 1024)
-        .with_guest_stack_size(1 * 1024 * 1024);
-
-    // hyperlight wasm currently doesn't expose a way to set the host
-    // function definition size, so we do it manually here with a
-    // horrible hack to get a mutable reference to the config
-    let config = builder.get_config() as *const _ as *mut SandboxConfiguration;
-    let config = unsafe { config.as_mut().unwrap() };
-    config.set_host_function_definition_size(20 * 1024);
-
-    let mut sb = builder.build().unwrap();
-
-    let state = WasiImpl::new();
-    let rt = register_host_functions(&mut sb, state);
-
-    let sb = sb.load_runtime().unwrap();
-    let sb = sb.load_module(wasm_path).unwrap();
-
-    let sb = RootSandbox { sb, rt };
-    let sb = Arc::new(Mutex::new(sb));
+/// Run an HTTP proxy server that forwards requests to the guest component's
+/// `wasi:http/incoming-handler` export.
+fn run_http(options: CliOptions, addr: &str) {
+    let addr: SocketAddr = addr.parse().unwrap_or_else(|e| {
+        eprintln!("Invalid address '{addr}': {e}");
+        std::process::exit(1);
+    });
 
     RUNTIME.block_on(async move {
-        let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+        SANDBOX_POOL.lock().await.from_options(options);
+        println!("Starting server on http://{addr}");
+
         let listener = TcpListener::bind(addr).await.unwrap();
 
         loop {
@@ -62,17 +123,13 @@ fn main() {
             // `hyper::rt` IO traits.
             let io = TokioIo::new(stream);
 
-            let sb = sb.clone();
-
             RUNTIME.spawn(async move {
                 // Finally, we bind the incoming connection to our `hello` service
                 if let Err(err) = http1::Builder::new()
                     // `service_fn` converts our function in a `Service`
                     .serve_connection(
                         io,
-                        service_fn(move |req: hyper::Request<hyper::body::Incoming>| {
-                            hello(sb.clone(), req)
-                        }),
+                        service_fn(move |req: hyper::Request<hyper::body::Incoming>| hello(req)),
                     )
                     .await
                 {
@@ -84,11 +141,11 @@ fn main() {
 }
 
 async fn hello(
-    sb: Arc<Mutex<RootSandbox<WasiImpl, LoadedWasmSandbox>>>,
     mut req: hyper::Request<hyper::body::Incoming>,
 ) -> Result<hyper::Response<Full<Bytes>>, Infallible> {
-    let mut sb = sb.lock().await;
-    let inst = wasi_impl::bindings::root::component::RootExports::incoming_handler(&mut *sb);
+    let mut sb = SANDBOX_POOL.lock().await.get_sandbox();
+    let snapshot = sb.sb.snapshot().unwrap();
+    let inst = wasi_impl::bindings::root::component::RootExports::incoming_handler(&mut sb);
 
     let body = req.body_mut();
     let mut full_body = Vec::new();
@@ -111,7 +168,7 @@ async fn hello(
     let _ = body_stream.write(&full_body);
     body_stream.close();
 
-    let req = types::http_incoming_request::IncomingRequest {
+    let req = wasi_impl::types::http_incoming_request::IncomingRequest {
         method: req.method().into(),
         path_with_query: Some(
             req.uri()
@@ -146,6 +203,12 @@ async fn hello(
     tokio::task::block_in_place(|| {
         inst.handle(req, outparam.clone());
     });
+
+    sb.sb.restore(&snapshot).unwrap();
+
+    // Return the sandbox to the pool immediately after the call, so it's available for the next
+    // request while we wait for the guest to produce a response.
+    SANDBOX_POOL.lock().await.return_sandbox(sb);
 
     let Some(response) = outparam.write().await.response.take() else {
         let body = Full::new(Bytes::from("Error reading body"));
@@ -184,7 +247,7 @@ async fn hello(
     }
 }
 
-impl From<&hyper::Method> for wasi::http::types::Method {
+impl From<&hyper::Method> for wasi_impl::bindings::wasi::http::types::Method {
     fn from(method: &hyper::Method) -> Self {
         match method.as_str() {
             "GET" => wasi_impl::bindings::wasi::http::types::Method::Get,

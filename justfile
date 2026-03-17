@@ -39,7 +39,7 @@ build: make-wit-world
     cargo build
 
 run-rust: build build-rust-component
-    cargo run -- {{ OUT_DIR }}/sample_wasi_http_rust.aot
+    cargo run -- serve --addr 0.0.0.0:9999 {{ OUT_DIR }}/sample_wasi_http_rust.aot
 
 run-js: build build-js-component
-    cargo run -- {{ OUT_DIR }}/sample-wasi-http-js.aot
+    cargo run -- serve --addr 0.0.0.0:8888 {{ OUT_DIR }}/sample-wasi-http-js.aot
