@@ -30,8 +30,7 @@ fn main() {
 
     let builder = hyperlight_wasm::SandboxBuilder::new()
         .with_guest_heap_size(30 * 1024 * 1024)
-        .with_guest_stack_size(1 * 1024 * 1024)
-        .with_function_definition_size(20 * 1024);
+        .with_guest_scratch_size(1 * 1024 * 1024);
 
     let mut sb = builder.build().unwrap();
 
