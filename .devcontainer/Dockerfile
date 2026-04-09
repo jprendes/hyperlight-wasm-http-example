@@ -17,6 +17,7 @@ RUN apt-get update \
         gdb \
         git \
         gnupg \
+        libc6 \
         lsb-release \
         make \
         pkg-config \
@@ -53,7 +54,7 @@ RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhisto
 
 USER $USER
 
-ARG RUST_TOOLCHAIN=1.89
+ARG RUST_TOOLCHAIN=1.94
 
 # Install rust
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
@@ -66,5 +67,5 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
     && cargo install just \
     && cargo install cargo-component \
     && cargo install cargo-hyperlight \
-    && cargo install hyperlight-wasm-aot --locked --version 0.12.0 \
+    && cargo install hyperlight-wasm-aot --locked --version 0.14.0 \
     && cargo install wasmtime-cli --locked --version 36.0.6
