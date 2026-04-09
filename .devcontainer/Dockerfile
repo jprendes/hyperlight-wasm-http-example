@@ -17,6 +17,7 @@ RUN apt-get update \
         gdb \
         git \
         gnupg \
+        libc6 \
         lsb-release \
         make \
         pkg-config \
