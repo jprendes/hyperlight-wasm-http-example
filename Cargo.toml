@@ -7,6 +7,10 @@ anyhow = "1.0"
 bytes = "1"
 getrandom = "0.3.3"
 http-body-util = "0.1"
+anyhow = "1.0"
+bytes = "1"
+getrandom = "0.3.3"
+http-body-util = "0.1"
 hyper = "1.7"
 hyper-util = { version = "0.1", features = ["full"] }
 hyperlight-component-macro = { version = "0.14.0" }

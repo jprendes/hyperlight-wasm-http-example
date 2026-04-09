@@ -9,6 +9,15 @@ use wasi_impl::{
     types::{WasiImpl, http_incoming_body::IncomingBody, io_stream::Stream},
     worker::RUNTIME,
 };
+mod wasi_impl;
+
+use wasi_impl::{
+    Resource,
+    bindings::{RootSandbox, register_host_functions, wasi, wasi::http::IncomingHandler},
+    types,
+    types::{WasiImpl, http_incoming_body::IncomingBody, io_stream::Stream},
+    worker::RUNTIME,
+};
 
 use std::{convert::Infallible, net::SocketAddr, str::FromStr, sync::Arc};
 
@@ -36,10 +45,13 @@ fn main() {
 
     let state = WasiImpl::new();
     let rt = register_host_functions(&mut sb, state);
+    let state = WasiImpl::new();
+    let rt = register_host_functions(&mut sb, state);
 
     let sb = sb.load_runtime().unwrap();
     let sb = sb.load_module(wasm_path).unwrap();
 
+    let sb = RootSandbox { sb, rt };
     let sb = RootSandbox { sb, rt };
     let sb = Arc::new(Mutex::new(sb));
 
@@ -81,6 +93,7 @@ async fn hello(
 ) -> Result<hyper::Response<Full<Bytes>>, Infallible> {
     let mut sb = sb.lock().await;
     let inst = wasi_impl::bindings::root::component::RootExports::incoming_handler(&mut *sb);
+    let inst = wasi_impl::bindings::root::component::RootExports::incoming_handler(&mut *sb);
 
     let body = req.body_mut();
     let mut full_body = Vec::new();
@@ -113,7 +126,9 @@ async fn hello(
         ),
         scheme: Some(if req.uri().scheme_str() == Some("https") {
             wasi_impl::bindings::wasi::http::types::Scheme::HTTPS
+            wasi_impl::bindings::wasi::http::types::Scheme::HTTPS
         } else {
+            wasi_impl::bindings::wasi::http::types::Scheme::HTTP
             wasi_impl::bindings::wasi::http::types::Scheme::HTTP
         }),
         authority: req
@@ -177,8 +192,19 @@ async fn hello(
 }
 
 impl From<&hyper::Method> for wasi::http::types::Method {
+impl From<&hyper::Method> for wasi::http::types::Method {
     fn from(method: &hyper::Method) -> Self {
         match method.as_str() {
+            "GET" => wasi_impl::bindings::wasi::http::types::Method::Get,
+            "POST" => wasi_impl::bindings::wasi::http::types::Method::Post,
+            "PUT" => wasi_impl::bindings::wasi::http::types::Method::Put,
+            "DELETE" => wasi_impl::bindings::wasi::http::types::Method::Delete,
+            "HEAD" => wasi_impl::bindings::wasi::http::types::Method::Head,
+            "OPTIONS" => wasi_impl::bindings::wasi::http::types::Method::Options,
+            "CONNECT" => wasi_impl::bindings::wasi::http::types::Method::Connect,
+            "TRACE" => wasi_impl::bindings::wasi::http::types::Method::Trace,
+            "PATCH" => wasi_impl::bindings::wasi::http::types::Method::Patch,
+            other => wasi_impl::bindings::wasi::http::types::Method::Other(other.to_string()),
             "GET" => wasi_impl::bindings::wasi::http::types::Method::Get,
             "POST" => wasi_impl::bindings::wasi::http::types::Method::Post,
             "PUT" => wasi_impl::bindings::wasi::http::types::Method::Put,
